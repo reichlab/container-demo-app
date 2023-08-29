@@ -9,6 +9,4 @@
 source ./slack.sh
 
 # run the "app"
-ls -al .
-echo "SLACK_API_TOKEN=${SLACK_API_TOKEN}, CHANNEL_ID=${CHANNEL_ID}"
 slack_message "test Docker app ran"
