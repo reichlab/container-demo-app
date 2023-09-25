@@ -60,5 +60,13 @@ git commit -m "update"
 slack_message "pushing"
 git push # where any GitHub authentication trouble will be
 
+# test `gh` authentication
+gh issue list
+if [ $? -eq 0 ]; then
+  slack_message "gh OK"
+else
+  slack_message "gh FAILED"
+fi
+
 slack_upload README.md
 slack_message "done"
