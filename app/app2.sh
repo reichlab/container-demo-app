@@ -42,6 +42,8 @@ set -o allexport
 source ~/.env
 set +o allexport
 
+slack_message "entered. SECRET='${SECRET}'"
+
 # clone the sandbox app if necessary
 SANDBOX_DIR="/data/sandbox/"
 if [ ! -d "${SANDBOX_DIR}" ]; then
@@ -50,7 +52,7 @@ if [ ! -d "${SANDBOX_DIR}" ]; then
 fi
 
 # run the "app"
-slack_message "started. editing file"
+slack_message "editing file"
 cd /data/sandbox/
 git pull
 echo "$(date)" >>README.md

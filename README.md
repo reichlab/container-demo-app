@@ -75,11 +75,11 @@ docker build -t slack-app:1.0 .
 
 # Steps to run the image locally
 
-Run the following command to run an instance of the app image on a temporary container that has the volume mounted at `/data/`. (Make sure you did the steps in "Steps to build the image" before doing the following.) Remove the `--rm` flag if you want to work with the temp container after it finishes. With luck, you'll see output on the Slack channel configured above by the `config/.env` file.
+Run the following command to run an instance of the app image on a temporary container that has the volume mounted at `/data/`. (Make sure you did the steps in "Steps to build the image" before doing the following.) Remove the `--rm` flag if you want to work with the temp container after it finishes. With luck, you'll see output on the Slack channel configured above by the `config/.env` file. Note that this command demonstrates passing the `SECRET` environment variable to the container, which prints that value.
 
 ```bash
 # run the image
-docker run --rm --mount type=volume,src=data_volume,target=/data slack-app:1.0
+docker run --rm --mount type=volume,src=data_volume,target=/data -e SECRET='shh!' slack-app:1.0
 ```
 
 # Steps to publish the image
