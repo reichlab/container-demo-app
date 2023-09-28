@@ -1,6 +1,6 @@
 # Introduction
 
-This project demonstrates containerizing a model (the "app") so that it can run on both [Amazon Elastic Container Service](https://aws.amazon.com/ecs/) (Amazon ECS) on a schedule, and in local development. In this case the app just updates the [sandbox repo](https://github.com/reichlabmachine/sandbox), posting Slack #tmp messages along the way, but the steps and components involved extend to any kind of non-service app (i.e., one that starts, does its work, and then exits).
+This project demonstrates containerizing a model (the "app") so that it can run on both [Amazon Elastic Container Service](https://aws.amazon.com/ecs/) (Amazon ECS) on a schedule, and in local development. In this case the app just updates the [sandbox repo](https://github.com/reichlabmachine/sandbox), posting Slack [#tmp channel](https://app.slack.com/client/T089JRGMA/C02UELXDPQQ) messages along the way, but the steps and components involved extend to any kind of non-service app (i.e., one that starts, does its work, and then exits).
 
 # Volume structure
 
@@ -84,24 +84,15 @@ docker run --rm --mount type=volume,src=data_volume,target=/data -e SECRET='shh!
 
 # Steps to publish the image
 
-To publish the image to [Docker Hub](https://hub.docker.com/), run the following command in this repo's root directory, naming it as desired.
+To publish the image to the [Docker Hub container-demo-app reichlab](https://hub.docker.com/repository/docker/reichlab/container-demo-app/) repository, run the following command in this repo's root directory, tagging it as desired.
 
 ```bash
-docker tag slack-app:1.0 mattcornell/slack-app:1.0
-docker push mattcornell/slack-app:1.0
+docker login -u "reichlab" docker.io
+docker tag container-demo-app:1.0 reichlab/container-demo-app:1.0
+docker push reichlab/container-demo-app:1.0
 ```
 
-# ECS setup
+# Steps to set up AWS ECS
 
-Set up [Amazon Elastic Container Service](https://aws.amazon.com/ecs/) (Amazon ECS) using the following steps. NB: This is complicated to get correct.
+See [ecs.md](ecs.md) for instructions to set up [Amazon Elastic Container Service](https://aws.amazon.com/ecs/) (Amazon ECS) to run your image on their [Fargate Serverless Compute Engine](https://aws.amazon.com/fargate/).
 
-## TBD: Steps:
-
-- create an EFS file system
-- populate the file system
-- create a security group
-- create a cluster
-- create the task definition
-- run a task
-- check output
-- clean up
