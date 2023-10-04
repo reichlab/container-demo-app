@@ -26,7 +26,7 @@ else
 fi
 
 # check for required files, copying to home dir if found (recall that home dir is ephemeral)
-REQUIRED_FILES="/data/config/.env /data/config/.gitconfig /data/config/.git-credentials"
+REQUIRED_FILES="${CONFIG_DIR}/.env ${CONFIG_DIR}/.gitconfig ${CONFIG_DIR}/.git-credentials"
 for FILE in ${REQUIRED_FILES}; do
   if [ ! -f "${FILE}" ]; then
     echo "required file not found: '${FILE}'"
