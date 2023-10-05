@@ -53,7 +53,7 @@ docker build -t container-demo-app:1.0 .
 ```
 
 # Steps to run the image locally
-
+[load-env-vars.sh](app%2Fload-env-vars.sh)
 Run the following command to run an instance of the app image on a temporary container that has the volume mounted at `/data/`. (Make sure you did the steps in "Steps to build the image" before doing the following.) Remove the `--rm` flag if you want to work with the temp container after it finishes. With luck, you'll see output on the Slack channel set in the `.env` file.
 
 > Note: The command assumes you've created a `config/.env` file that contains the required environment variables documented above in "Environment variables".
