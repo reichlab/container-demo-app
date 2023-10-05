@@ -4,22 +4,18 @@ This project demonstrates containerizing a model (the "app") so that it can run 
 
 # Volume structure
 
-In both local and ECS cases, the app expects the following directories:
+In both local and ECS cases, the app expects a volume to be mounted at `/data`. It must have read/write permissions by the executing user. This is where any required git repositories are expected to be cloned. It's also where `app2.sh` will clone the [sandbox repo](https://github.com/reichlabmachine/sandbox) if not present.
 
-- `/data` (directory): Data mount point for the app. Must be support read/write permissions by the executing user.
-- `/data/sandbox` (directory): Where the app will clone the [sandbox repo](https://github.com/reichlabmachine/sandbox) if not present.
-- `/data/config` (directory): Contains files required to configure the user:
-    - `.env` (file): Environment variable file that contains these variables: `SLACK_API_TOKEN` (API token for the lab's slack API), `CHANNEL_ID` (the Slack channel to send messages to), and `GH_TOKEN` (GitHub personal access token that the [GitHub CLI](https://cli.github.com/) will use).
-    - `.git-credentials` (file): Cached GitHub personal access token as used by [git-credential-store](https://git-scm.com/docs/git-credential-store).
-    - `.gitconfig` (file): [Configuration variables file](https://git-scm.com/docs/git-config#_configuration_file) that must contain the [credential] and [user] sections as follows:
+# Environment variables
 
-```
-[credential]
-    helper = store
-[user]
-    name = <user name>
-    email = <user email>
-```
+`app2.sh` requires the following environment variables.
+
+> Note It's easiest and safest to save these in a `*.env` file and then pass that file to `docker run` as done below in "Steps to run the image locally".
+
+- `SLACK_API_TOKEN`, `CHANNEL_ID`: [API token](https://api.slack.com/authentication/token-types#bot) for the lab's slack API and the Slack channel id to send messages to, respectively. Saved into `~/.env`.
+- `GH_TOKEN`: [GitHub personal access token](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/managing-your-personal-access-tokens) that the [GitHub CLI](https://cli.github.com/) will use. Saved into `~/.env`.
+- `GIT_USER_NAME`, `GIT_USER_EMAIL`: Global `user.name` and `user.email` values to save into the `~/.gitconfig` [Configuration variables file](https://git-scm.com/docs/git-config#_configuration_file) via `git config --global ...`.
+- `GIT_CREDENTIALS`: GitHub personal access token as used by [git-credential-store](https://git-scm.com/docs/git-credential-store). Saved into `~/.git-credentials`.
 
 # Overall procedure for local development
 
@@ -30,36 +26,18 @@ In both local and ECS cases, the app expects the following directories:
 
 # Steps to create a local volume
 
-Before running the image you must create a [Docker volume](https://docs.docker.com/storage/volumes/) containing a `/data` directory populated as described in "Volume structure" above. Then you can run the image.
+Before running the image you must create a [Docker volume](https://docs.docker.com/storage/volumes/) containing a `/data` directory as described in "Volume structure" above. Then you can run the image.
 
-Create the following _non-versioned_ files in this repo's `config/` dir (see "Volume structure" above for file details):
-
-- `.env`
-- `.gitconfig`
-- `.git-credentials`
-
-Run the following commands, which create the volume, mount it in a temporary container, copy the `config/` dir to the volume and then clean up.
-
-Note: the `COPYFILE_DISABLE` variable is necessary only in Mac development to disable AppleDouble format ("._*" files) per [this post](https://superuser.com/questions/61185/why-do-i-get-files-like-foo-in-my-tarball-on-os-x). Otherwise, you'll get files in the volume's `config/` dir like `._.env` and `._.git-credentials`.
+Run the following commands, which create the volume and then list its contents to verify it exists and can be mounted at `/data`.
 
 ```bash
+cd "<path to this repo>"
+
 # create the empty volume
 docker volume create data_volume
 
-# create a temp container that mounts the volume at `/data`
-docker create --name temp_container --mount type=volume,src=data_volume,target=/data ubuntu
-
-# copy the `config/` directory to the volume and then delete the temp container. substitute your repo's root directory for the placeholder shown
-COPYFILE_DISABLE=1 tar -c -C /path/to/docker-slack-app config/ | docker cp - temp_container:/data
-docker rm temp_container
-
-# verify the volume's contents by printing all files under `/data`. the output should look like this:
-# /data
-# /data/config
-# /data/config/.env
-# /data/config/.git-credentials
-# /data/config/.gitconfig
-docker run --rm -i -v=data_volume:/data ubuntu find /data
+# verify the volume's contents by listing `/data` contents
+docker run --rm -i -v=data_volume:/data ubuntu ls -al /data
 
 # (optional) explore the volume from the command line via a temp container
 docker run --rm -it --name temp_container --mount type=volume,src=data_volume,target=/data ubuntu /bin/bash
@@ -70,16 +48,23 @@ docker run --rm -it --name temp_container --mount type=volume,src=data_volume,ta
 To build the image, run the following command in this repo's root directory, naming it as desired:
 
 ```bash
-docker build -t slack-app:1.0 .
+cd "<path to this repo>"
+docker build -t container-demo-app:1.0 .
 ```
 
 # Steps to run the image locally
 
-Run the following command to run an instance of the app image on a temporary container that has the volume mounted at `/data/`. (Make sure you did the steps in "Steps to build the image" before doing the following.) Remove the `--rm` flag if you want to work with the temp container after it finishes. With luck, you'll see output on the Slack channel configured above by the `config/.env` file. Note that this command demonstrates passing the `SECRET` environment variable to the container, which prints that value.
+Run the following command to run an instance of the app image on a temporary container that has the volume mounted at `/data/`. (Make sure you did the steps in "Steps to build the image" before doing the following.) Remove the `--rm` flag if you want to work with the temp container after it finishes. With luck, you'll see output on the Slack channel set in the `.env` file.
+
+> Note: The command assumes you've created a `config/.env` file that contains the required environment variables documented above in "Environment variables".
 
 ```bash
 # run the image
-docker run --rm --mount type=volume,src=data_volume,target=/data -e SECRET='shh!' slack-app:1.0
+cd "<path to this repo>"
+docker run --rm \
+  --mount type=volume,src=data_volume,target=/data \
+  --env-file config/.env \
+  container-demo-app:1.0
 ```
 
 # Steps to publish the image
@@ -95,4 +80,3 @@ docker push reichlab/container-demo-app:1.0
 # Steps to set up AWS ECS
 
 See [ecs.md](ecs.md) for instructions to set up [Amazon Elastic Container Service](https://aws.amazon.com/ecs/) (Amazon ECS) to run your image on their [Fargate Serverless Compute Engine](https://aws.amazon.com/fargate/).
-

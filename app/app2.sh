@@ -4,58 +4,52 @@
 # This is a small script to drive creating a Docker image that we can run as a batch job from AWS ECS and EFS.
 #
 
-# load slack functions. NB: requires two environment variables: SLACK_API_TOKEN and CHANNEL_ID .
-# done first b/c we start in WORKDIR, which we lose through later `cd`s
+# write incoming environment variables into three files. required variables:
 
-SLACK_FILE="./slack.sh"
-if [ ! -f "${SLACK_FILE}" ]; then
-  echo "required file not found: '${SLACK_FILE}'"
+# verify all vars passed in
+if [ -z ${SLACK_API_TOKEN+x} ] || [ -z ${CHANNEL_ID+x} ] || [ -z ${GH_TOKEN+x} ] || [ -z ${GIT_USER_NAME+x} ] || [ -z ${GIT_USER_EMAIL+x} ] || [ -z ${GIT_CREDENTIALS+x} ]; then
+  echo "one or more required environment variables were unset: SLACK_API_TOKEN='${SLACK_API_TOKEN}', CHANNEL_ID='${CHANNEL_ID}', GH_TOKEN='${GH_TOKEN}', GIT_USER_NAME='${GIT_USER_NAME}', GIT_USER_EMAIL='${GIT_USER_EMAIL}', GIT_CREDENTIALS='${GIT_CREDENTIALS}'"
   exit 1 # failure
 else
-  echo "required file found: '${SLACK_FILE}'. loading"
-  source "${SLACK_FILE}"
+  echo "found all required environment variables"
 fi
 
-# check for required dirs (we don't check '/data' parent b/c it's present if subdir found)
-CONFIG_DIR="/data/config"
-if [ ! -d "${CONFIG_DIR}" ]; then
-  echo "required dir not found: '${CONFIG_DIR}'"
-  exit 1 # failure
-else
-  echo "required dir found: '${CONFIG_DIR}'"
-fi
+# file 1/3: ~/.env
+ENV_FILE_NAME="${HOME}/.env"
+echo "SLACK_API_TOKEN=${SLACK_API_TOKEN}" >"${ENV_FILE_NAME}" # NB: overwrites!
+echo "CHANNEL_ID=${CHANNEL_ID}" >>"${ENV_FILE_NAME}"
+echo "GH_TOKEN=${GH_TOKEN}" >>"${ENV_FILE_NAME}"
 
-# check for required files, copying to home dir if found (recall that home dir is ephemeral)
-REQUIRED_FILES="${CONFIG_DIR}/.env ${CONFIG_DIR}/.gitconfig ${CONFIG_DIR}/.git-credentials"
-for FILE in ${REQUIRED_FILES}; do
-  if [ ! -f "${FILE}" ]; then
-    echo "required file not found: '${FILE}'"
-    exit 1 # failure
-  else
-    echo "required file found: '${FILE}'. copying to '${HOME}'"
-    cp "${FILE}" "${HOME}"
-  fi
-done
+# file 2/3: ~/.git-credentials
+echo "${GIT_CREDENTIALS}" >"${HOME}/.git-credentials"
+
+# file 3/3: ~/.gitconfig
+git config --global user.name "${GIT_USER_NAME}"
+git config --global user.email "${GIT_USER_EMAIL}"
+git config --global credential.helper store
 
 # load environment variables - per https://stackoverflow.com/questions/19331497/set-environment-variables-from-file-of-key-value-pairs
 set -o allexport
-source ~/.env
+source "${ENV_FILE_NAME}"
 set +o allexport
 
-slack_message "entered. SECRET='${SECRET}'"
+# load slack functions. NB: requires SLACK_API_TOKEN and CHANNEL_ID environment variables
+source "./slack.sh"
+
+slack_message "entered. USER='${USER}', HOME='${HOME}', PWD='${PWD}'"
 
 # clone the sandbox app if necessary
-SANDBOX_DIR="/data/sandbox/"
+SANDBOX_DIR="/data/sandbox"
 if [ ! -d "${SANDBOX_DIR}" ]; then
-  cd /data
-  git clone https://github.com/reichlabmachine/sandbox.git
+  git clone -C "${SANDBOX_DIR}/.." https://github.com/reichlabmachine/sandbox.git
 fi
 
 # run the "app"
 slack_message "editing file"
-cd /data/sandbox/
+cd "${SANDBOX_DIR}"
+ls -al
 git pull
-echo "$(date)" >>README.md
+date >>"README.md"
 git add .
 git commit -m "update"
 
