@@ -4,7 +4,8 @@
 # This is a small script to drive creating a Docker image that we can run as a batch job from AWS ECS and EFS.
 #
 
-# load environment variables and then slack functions. NB: requires SLACK_API_TOKEN and CHANNEL_ID environment variables
+# load environment variables and then slack functions. see README.md for which environment variables are required by
+# each script
 source "./load-env-vars.sh"
 source "./slack.sh"
 
@@ -13,6 +14,7 @@ slack_message "entered. USER='${USER}', HOME='${HOME}', PWD='${PWD}'"
 # clone the sandbox app if necessary
 SANDBOX_DIR="/data/sandbox"
 if [ ! -d "${SANDBOX_DIR}" ]; then
+  slack_message "cloning sandbox. SANDBOX_DIR='${SANDBOX_DIR}'"
   git clone -C "${SANDBOX_DIR}/.." https://github.com/reichlabmachine/sandbox.git
 fi
 

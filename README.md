@@ -31,7 +31,7 @@ Before running the image you must create a [Docker volume](https://docs.docker.c
 Run the following commands, which create the volume and then list its contents to verify it exists and can be mounted at `/data`.
 
 ```bash
-cd "<path to this repo>"
+cd "path-to-this-repo"
 
 # create the empty volume
 docker volume create data_volume
@@ -48,19 +48,19 @@ docker run --rm -it --name temp_container --mount type=volume,src=data_volume,ta
 To build the image, run the following command in this repo's root directory, naming it as desired:
 
 ```bash
-cd "<path to this repo>"
+cd "path-to-this-repo"
 docker build -t container-demo-app:1.0 .
 ```
 
 # Steps to run the image locally
-[load-env-vars.sh](app%2Fload-env-vars.sh)
-Run the following command to run an instance of the app image on a temporary container that has the volume mounted at `/data/`. (Make sure you did the steps in "Steps to build the image" before doing the following.) Remove the `--rm` flag if you want to work with the temp container after it finishes. With luck, you'll see output on the Slack channel set in the `.env` file.
+
+Run the following command to run the app's image in a temporary container mounts the volume at `/data/`. (Make sure you did the steps in "Steps to build the image" before doing the following.) Remove the `--rm` flag if you want to work with the temp container after it finishes. With luck, you'll see output on the Slack channel set in the `.env` file.
 
 > Note: The command assumes you've created a `config/.env` file that contains the required environment variables documented above in "Environment variables".
 
 ```bash
 # run the image
-cd "<path to this repo>"
+cd "path-to-this-repo"
 docker run --rm \
   --mount type=volume,src=data_volume,target=/data \
   --env-file config/.env \
