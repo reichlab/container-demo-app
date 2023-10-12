@@ -9,7 +9,7 @@
 source "./load-env-vars.sh"
 source "./slack.sh"
 
-slack_message "entered. USER='${USER}', HOME='${HOME}', PWD='${PWD}'"
+slack_message "entered. id='$(id -u -n)', HOME='${HOME}', PWD='${PWD}'"
 
 # clone the sandbox app if necessary
 SANDBOX_DIR="/data/sandbox"
