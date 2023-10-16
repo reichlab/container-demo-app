@@ -18,6 +18,13 @@ if [ ! -d "${SANDBOX_DIR}" ]; then
   git clone -C "${SANDBOX_DIR}/.." https://github.com/reichlabmachine/sandbox.git
 fi
 
+# print DRY_RUN info
+if [ -n "${DRY_RUN+x}" ]; then
+  slack_message "DRY_RUN set: '${DRY_RUN}'"
+else
+  slack_message "DRY_RUN not set"
+fi
+
 # run the "app"
 slack_message "editing file"
 cd "${SANDBOX_DIR}"
