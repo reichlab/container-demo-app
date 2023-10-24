@@ -2,8 +2,9 @@
 Set up [Amazon Elastic Container Service](https://aws.amazon.com/ecs/) (Amazon ECS) using the following steps. This requires the published image from the "Steps to publish the image" step above. NB: The following can be complicated to get correct.
 
 Notes:
-- We are naming new resources with the prefix "container_demo_app".
+- Below we use the prefix "container_demo_app".
 - Make sure you select the same region to use for all the following steps.
+- [ecs-diagram.jpg](ecs-diagram.jpg) outlines the ECS components involved.
 
 
 ## Create a security group
