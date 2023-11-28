@@ -8,14 +8,7 @@ In both local and ECS cases, the app expects a volume to be mounted at `/data`. 
 
 # Environment variables
 
-`app2.sh` requires the following environment variables.
-
-> Note It's easiest and safest to save these in a `*.env` file and then pass that file to `docker run` as done below in "Steps to run the image locally".
-
-- `SLACK_API_TOKEN`, `CHANNEL_ID`: [API token](https://api.slack.com/authentication/token-types#bot) for the lab's slack API and the Slack channel id to send messages to, respectively. Saved into `~/.env`.
-- `GH_TOKEN`: [GitHub personal access token](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/managing-your-personal-access-tokens) that the [GitHub CLI](https://cli.github.com/) will use. Saved into `~/.env`.
-- `GIT_USER_NAME`, `GIT_USER_EMAIL`: Global `user.name` and `user.email` values to save into the `~/.gitconfig` [Configuration variables file](https://git-scm.com/docs/git-config#_configuration_file) via `git config --global ...`.
-- `GIT_CREDENTIALS`: GitHub personal access token as used by [git-credential-store](https://git-scm.com/docs/git-credential-store). Saved into `~/.git-credentials`.
+See https://github.com/reichlab/container-utils/README.md for information about required environment variables.
 
 # Overall procedure for local development
 
@@ -76,7 +69,4 @@ docker login -u "reichlab" docker.io
 docker tag container-demo-app:1.0 reichlab/container-demo-app:1.0
 docker push reichlab/container-demo-app:1.0
 ```
-
-# Steps to set up AWS ECS
-
-See [ecs.md](ecs.md) for instructions to set up [Amazon Elastic Container Service](https://aws.amazon.com/ecs/) (Amazon ECS) to run your image on their [Fargate Serverless Compute Engine](https://aws.amazon.com/fargate/).
+[container-demo-app.env](..%2F..%2FDownloads%2Fcontainer-demo-app.env)

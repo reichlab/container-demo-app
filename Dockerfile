@@ -7,5 +7,10 @@ RUN echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/g
 RUN apt update && apt install -y gh;
 
 WORKDIR /app
+
+# clone https://github.com/reichlab/container-utils. ADD is a hack ala https://stackoverflow.com/questions/35134713/disable-cache-for-specific-run-commands
+ADD "https://api.github.com/repos/reichlab/container-utils/commits?per_page=1" latest_commit
+RUN git clone https://github.com/reichlab/container-utils.git
+
 COPY ./app .
-CMD ["bash", "./app2.sh"]
+CMD ["bash", "./app.sh"]
